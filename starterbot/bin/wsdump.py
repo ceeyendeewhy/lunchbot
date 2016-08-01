@@ -1,4 +1,4 @@
-#!/Users/cindyliu/pybot/starterbot/bin/python
+#!/Users/Alex/lunchbot/starterbot/bin/python
 
 import argparse
 import code
