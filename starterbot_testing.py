@@ -1,3 +1,5 @@
+# Same as starterbot.py, but only requires one person to sign up. For testing purposes only
+
 import os
 import time
 from slackclient import SlackClient
@@ -24,8 +26,8 @@ def addToSignups(user):
     signups.append(user)
     return True
 
-def createGroup(userA, userB, userC):
-    userList = userA + "," + userB + "," + userC + "," + BOT_ID
+def createGroup(userA):
+    userList = userA + "," + BOT_ID
     group = slack_client.api_call("mpim.open", token = os.environ.get('SLACK_BOT_TOKEN'), users = userList)
     slack_client.api_call("chat.postMessage", channel = group['group']['id'],
         text = "Let's get lunch!", as_user = True)
@@ -66,8 +68,8 @@ def handle_command(command, channel, user):
     if command.startswith("signup"):
         response = "You've been added to the list!"
         if (addToSignups(user)):
-            if (len(signups) >= 3):
-                createGroup(signups.pop(), signups.pop(), signups.pop())
+            if (len(signups) >= 1):
+                createGroup(signups.pop())
                 response = "You've been added to the list! Creating a group chat for your lunch buddies now..."
             else:
                 response = "You've been added to the list! Waiting for enough people to sign up for lunch..."
