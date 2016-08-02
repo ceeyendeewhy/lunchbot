@@ -1,6 +1,8 @@
 import os
 import time
 from slackclient import SlackClient
+from datetime import date
+from time import localtime
 
 
 # starterbot's ID as an environment variable
@@ -18,9 +20,8 @@ signups = []
 # Adds the current user to the list
 # Returns true if the user was not already in the list, false otherwise
 def addToSignups(user):
-    for x in signups:
-        if x == user:
-            return False
+    if user in signups:
+        return False
     signups.append(user)
     return True
 
@@ -79,9 +80,39 @@ def handle_command(command, channel, user):
             signups.remove(user)
         else:
             response = "You weren't already in the sign-up list!"
+    if command.startwith("schedule") or command.startwith("plan") or command.startwith("meet"):
+        meetingData = parseData(command)
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
 
+# 
+def parseData(command):
+    data = { "people" : [],
+                "month" = date.month, 
+                "day" = date.day, 
+                "year" = date.year, 
+                "time" = time.localtime(), 
+                "duration" = 60,
+                "purpose" = "Meeting" }
+    return data
+
+# Returns the people in the meeting
+def parsePeople(people):
+
+# Returns the date of the meeting
+def parseDate(date):
+    month = date.month
+    day = date.day
+    year = date.year
+
+# Returns the time of the meeting
+def parseTime(time):
+
+# Returns the duration of the meeting in minutes
+def parseDuration(duration):
+
+# Returns the subject of the meeting to be scheduled
+def parsePurpose(purpose):
 
 def parse_slack_output(slack_rtm_output):
     """
