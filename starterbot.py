@@ -2,6 +2,7 @@ import os
 import time
 from datetime import date
 from slackclient import SlackClient
+import requests
 
 # starterbot's ID as an environment variable
 BOT_ID = os.environ.get("BOT_ID")
@@ -79,6 +80,7 @@ def handle_command(command, channel, user):
             response = "You weren't already in the sign-up list!"
     if command.startwith("schedule"):
         meetingData = parseData(command, channel)
+        scheduler(meetingData)
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
 
@@ -176,6 +178,44 @@ def parse_slack_output(slack_rtm_output):
                        output['channel'], output['user']
     return None, None, None
 
+
+def scheduler(meetingData):
+        # data = { "people" : parsePeople(channel),
+        #         "date" : parseDate(channel),
+        #         "time" : parseTime(channel), 
+        #         "duration" : parseDuration(channel),
+        #         "purpose" : parsePurpose(channel) }
+    parameters = {}
+
+    attendees = []
+    for emailaddrs in data['people']:
+        attendee = {'Type': 'Required', 'EmailAddress' : {'Address' : emailaddrs}}
+        attendees += [attendee]
+    parameters['Attendees'] = attendees
+
+    timeconstraint = { 
+        "Timeslots": [ 
+           { 
+                "Start": { 
+                  "Date": date,  
+                  "Time": "9:00:00",  
+                  "TimeZone": "Pacific Standard Time" 
+                },  
+                "End": { 
+                  "Date": date,  
+                  "Time": "17:00:00",  
+                  "TimeZone": "Pacific Standard Time" 
+                }
+            }
+        ]
+    }
+    parameters['TimeConstraint'] = timeconstraint
+
+    parameter['MeetingDuration'] = data['duration']
+
+    r = requests.post("https://outlook.office.com/api/beta/me/findmeetingtimes", data=parameters)
+    print(r.url) #what our request looks like
+    print(r.text) #what our response would look like
 
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
