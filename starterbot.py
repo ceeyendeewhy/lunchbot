@@ -1,6 +1,6 @@
 import os
 import time
-import date
+from datetime import date
 from slackclient import SlackClient
 
 # starterbot's ID as an environment variable
@@ -8,7 +8,6 @@ BOT_ID = os.environ.get("BOT_ID")
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">:"
-EXAMPLE_COMMAND = "do"
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
@@ -78,7 +77,7 @@ def handle_command(command, channel, user):
             signups.remove(user)
         else:
             response = "You weren't already in the sign-up list!"
-    if command.startwith("schedule")
+    if command.startwith("schedule"):
         meetingData = parseData(command, channel)
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
@@ -87,9 +86,9 @@ def handle_command(command, channel, user):
 def parseData(command, channel):
     data = { "people" : parsePeople(channel),
                 "date" : parseDate(channel),
-                "time" = parseTime(channel), 
-                "duration" = parseDuration(channel),
-                "purpose" = parsePurpose(channel) }
+                "time" : parseTime(channel), 
+                "duration" : parseDuration(channel),
+                "purpose" : parsePurpose(channel) }
     return data
 
 def errorMessage(channel):
@@ -98,8 +97,8 @@ def errorMessage(channel):
 
 # Returns the people in the meeting
 def parsePeople(channel):
-    message = "Who do you want to invite to this meeting?\n" +
-        "Please enter a list of people using their Adaptive usernames, separated by spaces: \n" +
+    message = "Who do you want to invite to this meeting?\n" \
+        "Please enter a list of people using their Adaptive usernames, separated by spaces: \n" \
         "Example: jdoe fbar"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
@@ -111,8 +110,8 @@ def parsePeople(channel):
 
 # Returns the date of the meeting
 def parseDate(channel):
-    message = "What day do you want to hold this meeting?\n" +
-        "Please use MM/DD or MM/DD/YYYY format (defaults to current year):\n" +
+    message = "What day do you want to hold this meeting?\n" \
+        "Please use MM/DD or MM/DD/YYYY format (defaults to current year):\n" \
         "Example: 03/17/2016 for March 17, 2016"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
@@ -128,8 +127,8 @@ def parseDate(channel):
 
 # Returns the time of the meeting
 def parseTime(channel):
-    message = "What time do you want this meeting to start?\n" +
-        "Please use HH:MM format:\n" +
+    message = "What time do you want this meeting to start?\n" \
+        "Please use HH:MM format:\n" \
         "Example: 09:00 for 9:00 AM, 14:00 for 2:00 PM"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
@@ -138,8 +137,8 @@ def parseTime(channel):
 
 # Returns the duration of the meeting in minutes
 def parseDuration(channel):
-    message = "How long will this meeting be?\n" +
-        "Please enter the duration in terms of hours:\n" +
+    message = "How long will this meeting be?\n" \
+        "Please enter the duration in terms of hours:\n" \
         "Example: \"1.5\" for 1 hour and 30 minutes"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
@@ -155,7 +154,7 @@ def parseDuration(channel):
 
 # Returns the subject of the meeting to be scheduled
 def parsePurpose(channel):
-    message = "What is the topic of this meeting? \n" +
+    message = "What is the topic of this meeting? \n" \
         "Example: Lunchbot Planning Meeting"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
