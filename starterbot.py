@@ -1,6 +1,5 @@
 import os
 import time
-from datetime import date
 from slackclient import SlackClient
 
 # starterbot's ID as an environment variable
@@ -11,6 +10,8 @@ AT_BOT = "<@" + BOT_ID + ">:"
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
+
+READ_WEBSOCKET_DELAY = 1
 
 signups = []
 
@@ -77,7 +78,7 @@ def handle_command(command, channel, user):
             signups.remove(user)
         else:
             response = "You weren't already in the sign-up list!"
-    if command.startwith("schedule"):
+    if command.startswith("schedule"):
         meetingData = parseData(command, channel)
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
@@ -86,9 +87,9 @@ def handle_command(command, channel, user):
 def parseData(command, channel):
     data = { "people" : parsePeople(channel),
                 "date" : parseDate(channel),
-                "time" : parseTime(channel), 
                 "duration" : parseDuration(channel),
                 "purpose" : parsePurpose(channel) }
+    print(data)
     return data
 
 def errorMessage(channel):
@@ -102,28 +103,32 @@ def parsePeople(channel):
         "Example: jdoe fbar"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
-    command, _, _ = parse_slack_output(slack_client.rtm_read())
-    people = command.split(" ")
-    for person in people:
-        person = person + "@adaptiveinsights.com"
-    return people
+    while True:
+        command, _, _ = parse_slack_output(slack_client.rtm_read())
+        if command:
+            people = command.split(" ")
+            emails = []
+            for person in people:
+                emails.append(person + "@adaptiveinsights.com")
+            return emails
+        time.sleep(READ_WEBSOCKET_DELAY)
 
 # Returns the date of the meeting
 def parseDate(channel):
     message = "What day do you want to hold this meeting?\n" \
-        "Please use MM/DD or MM/DD/YYYY format (defaults to current year):\n" \
+        "Please use MM/DD or MM/DD/YYYY format:\n" \
         "Example: 03/17/2016 for March 17, 2016"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
     while True:
         command, _, _ = parse_slack_output(slack_client.rtm_read())
-        date = command.split("/")
-        if (len(date) == 3):
-            return date[2] + "-" + date[0] + "-" + date[1]
-        elif(len(date) == 2):
-            return str(date.year) + "-" + date[0] + "-" + date[1]
-        else:
-            errorMessage(channel)
+        if command:
+            date = command.split("/")
+            if (len(date) == 3):
+                return date[2] + "-" + date[0] + "-" + date[1]
+            else:
+                errorMessage(channel)
+        time.sleep(READ_WEBSOCKET_DELAY)
 
 # Returns the time of the meeting
 def parseTime(channel):
@@ -132,8 +137,11 @@ def parseTime(channel):
         "Example: 09:00 for 9:00 AM, 14:00 for 2:00 PM"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
-    command, _, _ = parse_slack_output(slack_client.rtm_read())
-    return command + ":00"
+    while True:
+        command, _, _ = parse_slack_output(slack_client.rtm_read())
+        if command:
+            return command + ":00"
+        time.sleep(READ_WEBSOCKET_DELAY)
 
 # Returns the duration of the meeting in minutes
 def parseDuration(channel):
@@ -144,12 +152,14 @@ def parseDuration(channel):
                           text=message, as_user=True)
     while True:
         command, _, _ = parse_slack_output(slack_client.rtm_read())
-        try:
-            duration = float(command)
-            duration *= 60
-            return "PT" + str(duration) + "M"
-        except ValueError:
-            errorMessage(channel)
+        if command:
+            try:
+                duration = float(command)
+                duration *= 60
+                return "PT" + str(duration) + "M"
+            except ValueError:
+                errorMessage(channel)
+        time.sleep(READ_WEBSOCKET_DELAY)
 
 
 # Returns the subject of the meeting to be scheduled
@@ -158,8 +168,11 @@ def parsePurpose(channel):
         "Example: Lunchbot Planning Meeting"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
-    command, _, _ = parse_slack_output(slack_client.rtm_read())
-    return command
+    while True:
+        command, _, _ = parse_slack_output(slack_client.rtm_read())
+        if command:
+            return command
+        time.sleep(READ_WEBSOCKET_DELAY)
 
 def parse_slack_output(slack_rtm_output):
     """
@@ -178,7 +191,6 @@ def parse_slack_output(slack_rtm_output):
 
 
 if __name__ == "__main__":
-    READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
     if slack_client.rtm_connect():
         print("StarterBot connected and running!")
         while True:
