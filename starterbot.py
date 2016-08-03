@@ -88,10 +88,9 @@ def handle_command(command, channel, user):
 # 
 def parseData(command, channel):
     data = { "people" : parsePeople(channel),
-                "date" : parseDate(channel),
-                "duration" : parseDuration(channel),
-                "purpose" : parsePurpose(channel) }
-    print(data)
+            "date" : parseDate(channel),
+            "duration" : parseDuration(channel),
+            "purpose" : parsePurpose(channel) }
     return data
 
 def errorMessage(channel):
@@ -118,7 +117,7 @@ def parsePeople(channel):
 # Returns the date of the meeting
 def parseDate(channel):
     message = "What day do you want to hold this meeting?\n" \
-        "Please use MM/DD or MM/DD/YYYY format:\n" \
+        "Please use MM/DD/YYYY format:\n" \
         "Example: 03/17/2016 for March 17, 2016"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
@@ -135,7 +134,7 @@ def parseDate(channel):
 # Returns the time of the meeting
 def parseTime(channel):
     message = "What time do you want this meeting to start?\n" \
-        "Please use HH:MM format:\n" \
+        "Please use 24-hour HH:MM format:\n" \
         "Example: 09:00 for 9:00 AM, 14:00 for 2:00 PM"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=message, as_user=True)
@@ -192,12 +191,11 @@ def parse_slack_output(slack_rtm_output):
     return None, None, None
 
 
-def scheduler(meetingData):
-        # data = { "people" : parsePeople(channel),
-        #         "date" : parseDate(channel),
-        #         "time" : parseTime(channel), 
-        #         "duration" : parseDuration(channel),
-        #         "purpose" : parsePurpose(channel) }
+def scheduler(data):
+    # data = { "people" : parsePeople(channel),
+    #         "date" : parseDate(channel),
+    #         "duration" : parseDuration(channel),
+    #         "purpose" : parsePurpose(channel) }
     parameters = {}
 
     attendees = []
@@ -225,6 +223,8 @@ def scheduler(meetingData):
     parameters['TimeConstraint'] = timeconstraint
 
     parameter['MeetingDuration'] = data['duration']
+
+    parameter['MaxCandidates'] = 3
 
     r = requests.post("https://outlook.office.com/api/beta/me/findmeetingtimes", data=parameters)
     print(r.url) #what our request looks like
