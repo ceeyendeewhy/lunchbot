@@ -201,19 +201,19 @@ def scheduler(data):
     attendees = []
     for emailaddrs in data['people']:
         attendee = {'Type': 'Required', 'EmailAddress' : {'Address' : emailaddrs}}
-        attendees += [attendee]
+        attendees.append(attendee)
     parameters['Attendees'] = attendees
 
     timeconstraint = { 
         "Timeslots": [ 
            { 
                 "Start": { 
-                  "Date": date,  
+                  "Date": data['date'],  
                   "Time": "9:00:00",  
                   "TimeZone": "Pacific Standard Time" 
                 },  
                 "End": { 
-                  "Date": date,  
+                  "Date": data['date'],  
                   "Time": "17:00:00",  
                   "TimeZone": "Pacific Standard Time" 
                 }
@@ -222,9 +222,9 @@ def scheduler(data):
     }
     parameters['TimeConstraint'] = timeconstraint
 
-    parameter['MeetingDuration'] = data['duration']
+    parameters['MeetingDuration'] = data['duration']
 
-    parameter['MaxCandidates'] = 3
+    parameters['MaxCandidates'] = 3
 
     r = requests.post("https://outlook.office.com/api/beta/me/findmeetingtimes", data=parameters)
     print(r.url) #what our request looks like
